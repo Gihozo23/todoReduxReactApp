@@ -1,55 +1,31 @@
 import React, { useState, useRef, useEffect } from "react";
 import Todos from "./Todos";
+import { useSelector, useDispatch } from "react-redux";
+import { addTodo, removeTodo } from "./features/todoSlice";
 
 function Task() {
   const inputRef = useRef(null);
-  const [tasks, setTasks] = useState([]);
+  const tasks = useSelector((state) => state.todos);
+  const dispatch = useDispatch();
+  // const [tasks, setTasks] = useState([]);
   const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    const storedTasks = localStorage.getItem("tasks");
-    if (storedTasks) {
-      try {
-        const parsedTasks = JSON.parse(storedTasks);
-        if (Array.isArray(parsedTasks)) {
-          setTasks(parsedTasks);
-          setVisible(parsedTasks.length > 0);
-        }
-      } catch (error) {
-        console.error("Failed to parse tasks from local storage:", error);
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    if (tasks.length > 0) {
-      localStorage.setItem("tasks", JSON.stringify(tasks));
-    }
-  }, [tasks]);
 
   function handleSubmit(event) {
     event.preventDefault();
     const newTask = inputRef.current.value.trim();
     if (newTask !== "") {
-      setTasks((prevTasks) => {
-        const updatedTasks = [...prevTasks, newTask];
-        inputRef.current.value = ""; // Clear input field
-        return updatedTasks;
-      });
+      dispatch(addTodo(newTask))
+      inputRef.current.value = ""; // Clear input field
       setVisible(true);
     }
   }
 
   function handleDelete(index) {
-    setTasks((prevTasks) => {
-      const updatedTasks = [...prevTasks];
-      updatedTasks.splice(index, 1);
-      return updatedTasks;
-    });
+    dispatch(removeTodo(index))
   }
 
   return (
-    <div className="max-w-lg mx-auto mt-10">
+    <div className="max-w-lg mx-auto">
       <h1 className="text-2xl font-bold text-center mb-4">Todo List</h1>
       <div className="flex justify-center mb-6">
         <form onSubmit={handleSubmit} className="flex items-center">
